@@ -5,8 +5,7 @@ WORKDIR /app
 # Copy package files
 COPY package.json ./
 
-# Install dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -19,12 +18,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install only production dependencies
-COPY package.json ./
-RUN npm install --production
-
-# Copy built React app from builder
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
 
 # Copy server and other necessary files
 COPY server.js .
@@ -44,3 +40,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Start application
 CMD ["npm", "start"]
+
